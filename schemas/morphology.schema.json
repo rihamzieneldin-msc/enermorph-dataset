@@ -2,47 +2,16 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "EnerMorph Morphology",
   "type": "object",
-  "required": [
-    "robot_id",
-    "base",
-    "actuators",
-    "sensors",
-    "power",
-    "compute",
-    "edges"
-  ],
+  "required": ["robot_id", "base", "actuators", "sensors", "power", "compute", "edges"],
   "properties": {
-    "robot_id": {
-      "type": "string"
-    },
+    "robot_id": { "type": "string" },
     "base": {
       "type": "object",
-      "required": [
-        "type",
-        "total_mass_kg",
-        "com_base_m"
-      ],
+      "required": ["type", "total_mass_kg", "com_base_m"],
       "properties": {
-        "type": {
-          "type": "string",
-          "enum": [
-            "fixed_base",
-            "wheeled",
-            "tracked"
-          ]
-        },
-        "total_mass_kg": {
-          "type": "number",
-          "minimum": 0
-        },
-        "com_base_m": {
-          "type": "array",
-          "items": {
-            "type": "number"
-          },
-          "minItems": 3,
-          "maxItems": 3
-        }
+        "type": { "type": "string", "enum": ["fixed_base", "wheeled", "tracked"] },
+        "total_mass_kg": { "type": "number", "minimum": 0 },
+        "com_base_m": { "type": "array", "items": { "type": "number" }, "minItems": 3, "maxItems": 3 }
       }
     },
     "actuators": {
@@ -50,102 +19,37 @@
       "minItems": 1,
       "items": {
         "type": "object",
-        "required": [
-          "id",
-          "parent_link",
-          "link_name",
-          "geom",
-          "specs",
-          "driver"
-        ],
+        "required": ["id", "parent_link", "link_name", "geom", "specs", "driver"],
         "properties": {
-          "id": {
-            "type": "string"
-          },
-          "parent_link": {
-            "type": "string"
-          },
-          "link_name": {
-            "type": "string"
-          },
-          "pose_base_m_rpy": {
-            "type": "array",
-            "items": {
-              "type": "number"
-            },
-            "minItems": 6,
-            "maxItems": 6
-          },
+          "id": { "type": "string" },
+          "parent_link": { "type": "string" },
+          "link_name": { "type": "string" },
+          "pose_base_m_rpy": { "type": "array", "items": { "type": "number" }, "minItems": 6, "maxItems": 6 },
           "geom": {
             "type": "object",
-            "required": [
-              "axis",
-              "range_deg",
-              "link_len_m"
-            ],
+            "required": ["axis", "range_deg", "link_len_m"],
             "properties": {
-              "axis": {
-                "type": "string",
-                "enum": [
-                  "x",
-                  "y",
-                  "z"
-                ]
-              },
-              "range_deg": {
-                "type": "array",
-                "items": {
-                  "type": "number"
-                },
-                "minItems": 2,
-                "maxItems": 2
-              },
-              "link_len_m": {
-                "type": "number",
-                "minimum": 0
-              }
+              "axis": { "type": "string", "enum": ["x", "y", "z"] },
+              "range_deg": { "type": "array", "items": { "type": "number" }, "minItems": 2, "maxItems": 2 },
+              "link_len_m": { "type": "number", "minimum": 0 }
             }
           },
           "specs": {
             "type": "object",
-            "required": [
-              "Kt_Nm_per_A",
-              "Kv_rad_per_s_per_V"
-            ],
+            "required": ["Kt_Nm_per_A", "Kv_rad_per_s_per_V"],
             "properties": {
-              "Kt_Nm_per_A": {
-                "type": "number",
-                "minimum": 0
-              },
-              "Kv_rad_per_s_per_V": {
-                "type": "number",
-                "minimum": 0
-              },
-              "rated_torque_Nm": {
-                "type": "number",
-                "minimum": 0
-              },
-              "max_vel_rad_s": {
-                "type": "number",
-                "minimum": 0
-              }
+              "Kt_Nm_per_A": { "type": "number", "minimum": 0 },
+              "Kv_rad_per_s_per_V": { "type": "number", "minimum": 0 },
+              "rated_torque_Nm": { "type": "number", "minimum": 0 },
+              "max_vel_rad_s": { "type": "number", "minimum": 0 }
             }
           },
           "driver": {
             "type": "object",
-            "required": [
-              "v_max_V",
-              "i_max_A"
-            ],
+            "required": ["v_max_V", "i_max_A"],
             "properties": {
-              "v_max_V": {
-                "type": "number",
-                "minimum": 0
-              },
-              "i_max_A": {
-                "type": "number",
-                "minimum": 0
-              }
+              "v_max_V": { "type": "number", "minimum": 0 },
+              "i_max_A": { "type": "number", "minimum": 0 }
             }
           }
         }
@@ -155,117 +59,50 @@
       "type": "array",
       "items": {
         "type": "object",
-        "required": [
-          "id",
-          "type",
-          "rate_hz"
-        ],
+        "required": ["id", "type", "rate_hz"],
         "properties": {
-          "id": {
-            "type": "string"
-          },
-          "type": {
-            "type": "string"
-          },
-          "pose_base_m_q": {
-            "type": "array",
-            "items": {
-              "type": "number"
-            },
-            "minItems": 7,
-            "maxItems": 7
-          },
-          "rate_hz": {
-            "type": "number",
-            "minimum": 0
-          },
-          "latency_ms": {
-            "type": "number",
-            "minimum": 0
-          }
+          "id": { "type": "string" },
+          "type": { "type": "string" },
+          "pose_base_m_q": { "type": "array", "items": { "type": "number" }, "minItems": 7, "maxItems": 7 },
+          "rate_hz": { "type": "number", "minimum": 0 },
+          "latency_ms": { "type": "number", "minimum": 0 }
         }
       }
     },
     "power": {
       "type": "object",
-      "required": [
-        "battery"
-      ],
+      "required": ["battery"],
       "properties": {
         "battery": {
           "type": "object",
-          "required": [
-            "v_nominal_V",
-            "capacity_Wh"
-          ],
+          "required": ["v_nominal_V", "capacity_Wh"],
           "properties": {
-            "v_nominal_V": {
-              "type": "number",
-              "minimum": 0
-            },
-            "capacity_Wh": {
-              "type": "number",
-              "minimum": 0
-            }
+            "v_nominal_V": { "type": "number", "minimum": 0 },
+            "capacity_Wh": { "type": "number", "minimum": 0 }
           }
         }
       }
     },
     "compute": {
       "type": "object",
-      "required": [
-        "platform",
-        "comms"
-      ],
+      "required": ["platform", "comms"],
       "properties": {
-        "platform": {
-          "type": "string"
-        },
-        "comms": {
-          "type": "string",
-          "enum": [
-            "WiFi",
-            "Ethernet",
-            "Bluetooth"
-          ]
-        },
-        "latency_ms": {
-          "type": "number",
-          "minimum": 0
-        }
+        "platform": { "type": "string" },
+        "comms": { "type": "string", "enum": ["WiFi", "Ethernet", "Bluetooth"] },
+        "latency_ms": { "type": "number", "minimum": 0 }
       }
     },
     "edges": {
       "type": "array",
       "items": {
         "type": "object",
-        "required": [
-          "u",
-          "v",
-          "type"
-        ],
+        "required": ["u", "v", "type"],
         "properties": {
-          "u": {
-            "type": "string"
-          },
-          "v": {
-            "type": "string"
-          },
-          "type": {
-            "type": "string",
-            "enum": [
-              "kinematic",
-              "mount",
-              "powerline",
-              "comm"
-            ]
-          },
-          "weight": {
-            "type": "number"
-          },
-          "directed": {
-            "type": "boolean"
-          }
+          "u": { "type": "string" },
+          "v": { "type": "string" },
+          "type": { "type": "string", "enum": ["kinematic", "mount", "powerline", "comm"] },
+          "weight": { "type": "number" },
+          "directed": { "type": "boolean" }
         }
       }
     }

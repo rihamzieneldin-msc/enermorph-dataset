@@ -1,0 +1,24 @@
+robot_id: "rbx_arm_v2"
+base:
+  type: fixed_base
+  total_mass_kg: 18.4
+  com_base_m: [0.02, 0.00, 0.11]
+actuators:
+  - id: "joint_1"
+    parent_link: "base"
+    link_name: "link_1"
+    pose_base_m_rpy: [0,0,0.12, 0,0,0]
+    geom: {axis: "z", range_deg: [-160,160], link_len_m: 0.32}
+    specs: {Kt_Nm_per_A: 0.35, Kv_rad_per_s_per_V: 15.2, rated_torque_Nm: 45, max_vel_rad_s: 4.0}
+    driver: {v_max_V: 24, i_max_A: 10}
+sensors:
+  - id: "imu_base"
+    type: "imu"
+    pose_base_m_q: [0,0,0.08, 1,0,0,0]
+    rate_hz: 200
+    latency_ms: 5
+power:
+  battery: {v_nominal_V: 24.0, capacity_Wh: 288}
+compute: {platform: "RaspberryPi4", comms: "WiFi", latency_ms: 8}
+edges:
+  - {u: "joint_1", v: "imu_base", type: "mount", directed: false}

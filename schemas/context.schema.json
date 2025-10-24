@@ -1,0 +1,86 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "EnerMorph Context",
+  "type": "object",
+  "required": [
+    "context_id",
+    "task",
+    "environment",
+    "logging"
+  ],
+  "properties": {
+    "context_id": {
+      "type": "string"
+    },
+    "robot_ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "task": {
+      "type": "object",
+      "required": [
+        "type",
+        "max_episode_time_s"
+      ],
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": [
+            "navigation",
+            "manipulation",
+            "transport",
+            "patrol"
+          ]
+        },
+        "route_file": {
+          "type": "string"
+        },
+        "payload": {
+          "type": "object",
+          "properties": {
+            "mass_kg": {
+              "type": "number",
+              "minimum": 0
+            }
+          }
+        },
+        "max_episode_time_s": {
+          "type": "number",
+          "minimum": 1
+        }
+      }
+    },
+    "environment": {
+      "type": "object",
+      "properties": {
+        "surface": {
+          "type": "string"
+        },
+        "slope_deg": {
+          "type": "number"
+        },
+        "mu": {
+          "type": "number",
+          "minimum": 0
+        }
+      }
+    },
+    "logging": {
+      "type": "object",
+      "required": [
+        "resolution_hz"
+      ],
+      "properties": {
+        "resolution_hz": {
+          "type": "number",
+          "minimum": 1
+        },
+        "sync": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

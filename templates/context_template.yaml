@@ -1,0 +1,17 @@
+context_id: "ctx_nav_loop_100m_payload2kg"
+robot_ids: ["rbx_arm_v2"]
+
+task:
+  type: "navigation"
+  route_file: "routes/loop_100m.waypoints"
+  payload: {mass_kg: 2.0}
+  max_episode_time_s: 120
+
+environment:
+  surface: "epoxy"
+  slope_deg: 0
+  mu: 0.6
+
+logging:
+  resolution_hz: 100
+  sync: "NTP"

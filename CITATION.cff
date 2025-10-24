@@ -1,0 +1,10 @@
+cff-version: 1.2.0
+message: "If you use EnerMorph Dataset or schema, please cite this work."
+title: "EnerMorph: Context-Rich Graph–Transformer Dataset for Energy-Aware Policy Transfer"
+authors:
+  - family-names: "YourSurname"
+    given-names: "YourGivenNames"
+    orcid: "https://orcid.org/0000-0000-0000-0000"
+version: "0.1.0"
+date-released: "2025-10-24"
+url: "https://github.com/<you>/enermorph-dataset"

@@ -1,0 +1,95 @@
+{
+  "schema_meta": {
+    "schema_name": "EnerMorph Context",
+    "schema_version": "1.0.0",
+    "file_version": "1.0.0",
+    "created_at": "2025-10-25T00:00:00Z",
+    "licenses": ["CC-BY-4.0"],
+    "unit_system": "SI",
+    "provenance": {
+      "authors": ["Riham Zeineldin"],
+      "organization": "AASTMT",
+      "notes": "Indoor navigation loop context over 10×5 m, 0.5 m grid."
+    }
+  },
+  "identifiers": {
+    "context_id": "scenario_nav_loop_100m",
+    "dataset_id": "enermorph_core_v1",
+    "compatible_morphology_ids": ["rbx_arm_v2"]
+  },
+  "context_profile": {
+    "name": "Navigation Loop — 100 m (AASTMT Lab)",
+    "summary": "Indoor nav loop over a 10×5 m area on 0.5 m grid; complete ~3.5 loops to reach ≈100 m total.",
+    "version_label": "v2",
+    "task": {
+      "task_class": "Navigation",
+      "task_type": "nav_loop_grid",
+      "parameters": { "grid_cell_m": 0.5, "loops": 3.5, "timeout_s": 1800 },
+      "goals": [
+        {
+          "goal_id": "finish_return",
+          "description": "Return to start cell within 0.5 m radial tolerance",
+          "success_criteria": "distance_to(start_pose) < 0.5"
+        }
+      ]
+    },
+    "site": {
+      "location": { "site_name": "AASTMT Lab A", "indoor": true },
+      "map": { "frame": "world", "resolution_m": 0.05, "size_m": [10.0, 5.0] },
+      "environment": {
+        "temperature_c": { "min": 22, "max": 28, "nominal": 25 },
+        "humidity_rel": { "min": 0.35, "max": 0.6, "nominal": 0.45 },
+        "surface": { "type": "epoxy", "friction_coeff": 0.6 }
+      }
+    },
+    "constraints": {
+      "speed_limit_mps": 0.8,
+      "accel_limit_mps2": 0.4,
+      "jerk_limit_mps3": 2.0,
+      "power_limit_w": 200,
+      "energy_budget_j": 18000,
+      "collision_margin_m": 0.1,
+      "min_clearance_m": 0.05
+    },
+    "logging": {
+      "timebase": { "clock_source": "ntp", "timezone": "Africa/Cairo", "sync_method": "pool.ntp.org" },
+      "streams": [
+        { "name": "odom", "source": "amr/odom", "modality": "odom", "sampling_hz": 50, "encoding": "CSV" },
+        { "name": "lidar", "source": "amr/lidar", "modality": "lidar", "sampling_hz": 10, "encoding": "CSV" },
+        { "name": "tof", "source": "amr/tof", "modality": "tof", "sampling_hz": 30, "encoding": "CSV" },
+        { "name": "imu", "source": "amr/imu", "modality": "imu", "sampling_hz": 200, "encoding": "CSV" },
+        { "name": "battery", "source": "amr/power", "modality": "power", "sampling_hz": 1, "encoding": "CSV" },
+        { "name": "env", "source": "amr/env", "modality": "env", "sampling_hz": 0.5, "encoding": "CSV" }
+      ],
+      "latency_budget_ms": 200,
+      "dropped_frame_policy": "flag",
+      "data_retention": "keep_raw_30d"
+    },
+    "compute_network": {
+      "edge_nodes": [
+        { "name": "rpi4", "cpu": "Cortex-A72", "ram_gb": 4, "storage_gb": 64, "os": "Ubuntu 22.04" },
+        { "name": "esp32", "cpu": "Xtensa dual-core", "ram_gb": 0.5, "storage_gb": 0.004, "os": "FreeRTOS" }
+      ],
+      "network": { "protocols": ["Wi-Fi", "MQTT"], "bandwidth_mbps": 100, "latency_ms": 15 }
+    },
+    "safety": {
+      "risk_level": "Medium",
+      "ppe_required": ["safety_shoes"],
+      "emergency_stop": true
+    },
+    "evaluation": {
+      "metrics": [
+        { "name": "success_rate", "higher_is_better": true },
+        { "name": "energy_j", "units": "J", "higher_is_better": false },
+        { "name": "path_length_m", "units": "m", "higher_is_better": false },
+        { "name": "collisions_count", "units": "count", "higher_is_better": false }
+      ]
+    },
+    "timing": { "typical_duration_s": 900 },
+    "events_template": [
+      { "event_key": "start_nav", "description": "Start navigation", "expected_order": 0 },
+      { "event_key": "finish_nav", "description": "Finish navigation", "expected_order": 1 }
+    ],
+    "attributes": { "grid_cells": "0.5 m, 20×10 cells over 10×5 m area" }
+  }
+}

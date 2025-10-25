@@ -1,0 +1,101 @@
+{
+  "schema_meta": {
+    "schema_name": "EnerMorph Morphology",
+    "schema_version": "1.0.0",
+    "file_version": "1.0.0",
+    "created_at": "2025-10-25T00:00:00Z",
+    "licenses": ["MIT"],
+    "unit_system": "SI",
+    "provenance": {
+      "authors": ["Riham Zeineldin"],
+      "organization": "AASTMT",
+      "notes": "AMR with 4× mecanum, Pi4 + ESP32, per-wheel L298 drivers."
+    }
+  },
+  "identifiers": {
+    "morphology_id": "rbx_arm_v2",
+    "dataset_id": "enermorph_core_v1"
+  },
+  "robot_profile": {
+    "name": "RBX-AMR v2",
+    "robot_class": "AMR",
+    "footprint": { "shape": "rect", "dims_m": [0.28, 0.25] },
+    "interfaces": [
+      { "name": "wifi0", "category": "Comms", "protocol": "Wi-Fi" },
+      { "name": "i2c0", "category": "Comms", "protocol": "I2C" },
+      { "name": "uart0", "category": "Comms", "protocol": "UART" },
+      { "name": "usb0", "category": "Comms", "protocol": "USB" },
+      { "name": "psu_12v", "category": "Power", "voltage_v": 12 },
+      { "name": "psu_5v", "category": "Power", "voltage_v": 5 }
+    ],
+    "safety": {
+      "emergency_stop": true,
+      "max_velocity_mps": 0.8,
+      "max_payload_kg": 2.0
+    },
+    "notes": "LIDAR: RPLIDAR A1M8 (360°, ≤6m, 5.5–10Hz). ToF: VL53L0X. IMU: MPU-9250. Env box: DHT22, BMP280, GP2Y1010, MQ sensors."
+  },
+  "graph": {
+    "node_set": [
+      { "id": "base_link", "node_type": "link", "tags": ["base_link"] },
+      { "id": "rpi4", "node_type": "cpu", "capabilities": { "os": "Ubuntu 22.04/64", "net": "Wi-Fi" } },
+      { "id": "esp32", "node_type": "mcu", "capabilities": { "wifi": true, "uart": true, "i2c": true } },
+      { "id": "battery_12v", "node_type": "battery", "attributes": { "chemistry": "Li-ion", "nominal_voltage_v": 12 } },
+      { "id": "buck_5v", "node_type": "psu", "attributes": { "input_v": 12, "output_v": 5 } },
+      { "id": "wheel_fl", "node_type": "wheel", "attributes": { "type": "mecanum", "dia_m": 0.058 } },
+      { "id": "wheel_fr", "node_type": "wheel", "attributes": { "type": "mecanum", "dia_m": 0.058 } },
+      { "id": "wheel_rl", "node_type": "wheel", "attributes": { "type": "mecanum", "dia_m": 0.058 } },
+      { "id": "wheel_rr", "node_type": "wheel", "attributes": { "type": "mecanum", "dia_m": 0.058 } },
+      { "id": "motor_fl", "node_type": "motor", "attributes": { "driver": "L298", "supply_v": 12 } },
+      { "id": "motor_fr", "node_type": "motor", "attributes": { "driver": "L298", "supply_v": 12 } },
+      { "id": "motor_rl", "node_type": "motor", "attributes": { "driver": "L298", "supply_v": 12 } },
+      { "id": "motor_rr", "node_type": "motor", "attributes": { "driver": "L298", "supply_v": 12 } },
+      { "id": "enc_fl", "node_type": "encoder", "attributes": { "type": "hall" } },
+      { "id": "enc_fr", "node_type": "encoder", "attributes": { "type": "hall" } },
+      { "id": "enc_rl", "node_type": "encoder", "attributes": { "type": "hall" } },
+      { "id": "enc_rr", "node_type": "encoder", "attributes": { "type": "hall" } },
+      { "id": "lidar_a1m8", "node_type": "lidar", "interfaces": [{ "name": "uart0", "category": "Comms", "protocol": "UART" }], "attributes": { "model": "RPLIDAR A1M8", "range_m": 6, "scan_rate_hz": 5.5 } },
+      { "id": "tof_left", "node_type": "tof", "interfaces": [{ "name": "i2c0", "category": "Comms", "protocol": "I2C" }] },
+      { "id": "tof_front", "node_type": "tof", "interfaces": [{ "name": "i2c0", "category": "Comms", "protocol": "I2C" }] },
+      { "id": "tof_right", "node_type": "tof", "interfaces": [{ "name": "i2c0", "category": "Comms", "protocol": "I2C" }] },
+      { "id": "imu_mpu9250", "node_type": "imu", "interfaces": [{ "name": "i2c0", "category": "Comms", "protocol": "I2C" }], "attributes": { "gyro_dps": 2000, "accel_g": 16, "mag_uT": 4800 } },
+      { "id": "env_box_1", "node_type": "module", "attributes": { "dht22": true, "bmp280": true, "gp2y1010": true, "mq_sensors": ["MQ2", "MQ4", "MQ5", "MQ7", "MQ8", "MQ135"] } },
+      { "id": "env_box_2", "node_type": "module" },
+      { "id": "env_box_3", "node_type": "module" },
+      { "id": "env_box_4", "node_type": "module" }
+    ],
+    "edge_set": [
+      { "id": "p1", "source": "battery_12v", "target": "buck_5v", "relation_type": "power" },
+      { "id": "p2", "source": "battery_12v", "target": "motor_fl", "relation_type": "power" },
+      { "id": "p3", "source": "battery_12v", "target": "motor_fr", "relation_type": "power" },
+      { "id": "p4", "source": "battery_12v", "target": "motor_rl", "relation_type": "power" },
+      { "id": "p5", "source": "battery_12v", "target": "motor_rr", "relation_type": "power" },
+      { "id": "p6", "source": "buck_5v", "target": "esp32", "relation_type": "power" },
+      { "id": "p7", "source": "buck_5v", "target": "rpi4", "relation_type": "power" },
+      { "id": "c1", "source": "esp32", "target": "motor_fl", "relation_type": "control" },
+      { "id": "c2", "source": "esp32", "target": "motor_fr", "relation_type": "control" },
+      { "id": "c3", "source": "esp32", "target": "motor_rl", "relation_type": "control" },
+      { "id": "c4", "source": "esp32", "target": "motor_rr", "relation_type": "control" },
+      { "id": "d1", "source": "enc_fl", "target": "esp32", "relation_type": "data" },
+      { "id": "d2", "source": "enc_fr", "target": "esp32", "relation_type": "data" },
+      { "id": "d3", "source": "enc_rl", "target": "esp32", "relation_type": "data" },
+      { "id": "d4", "source": "enc_rr", "target": "esp32", "relation_type": "data" },
+      { "id": "d5", "source": "imu_mpu9250", "target": "rpi4", "relation_type": "data" },
+      { "id": "d6", "source": "lidar_a1m8", "target": "rpi4", "relation_type": "data" },
+      { "id": "d7", "source": "tof_left", "target": "rpi4", "relation_type": "data" },
+      { "id": "d8", "source": "tof_front", "target": "rpi4", "relation_type": "data" },
+      { "id": "d9", "source": "tof_right", "target": "rpi4", "relation_type": "data" },
+      { "id": "d10", "source": "env_box_1", "target": "rpi4", "relation_type": "data" },
+      { "id": "d11", "source": "env_box_2", "target": "rpi4", "relation_type": "data" },
+      { "id": "d12", "source": "env_box_3", "target": "rpi4", "relation_type": "data" },
+      { "id": "d13", "source": "env_box_4", "target": "rpi4", "relation_type": "data" }
+    ]
+  },
+  "modules": [
+    { "id": "drive_module", "name": "Drive", "node_ids": ["wheel_fl", "wheel_fr", "wheel_rl", "wheel_rr", "motor_fl", "motor_fr", "motor_rl", "motor_rr", "enc_fl", "enc_fr", "enc_rl", "enc_rr"] },
+    { "id": "perception_module", "name": "Perception", "node_ids": ["lidar_a1m8", "tof_left", "tof_front", "tof_right", "imu_mpu9250"] },
+    { "id": "env_module", "name": "EnvSuites", "node_ids": ["env_box_1", "env_box_2", "env_box_3", "env_box_4"] }
+  ],
+  "attachments": [],
+  "calibration": []
+}

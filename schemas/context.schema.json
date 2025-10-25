@@ -1,85 +1,406 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "title": "EnerMorph Context",
+  "$id": "https://enermorph.org/schemas/morphology.schema.json",
+  "title": "EnerMorph Morphology Schema",
+  "description": "Robot-agnostic morphology schema for heterogeneous platforms (AMR, manipulator, mobile-manipulator, legged, aerial, hybrid). Graph-first; reproducible; scale-ready.",
   "type": "object",
-  "required": [
-    "context_id",
-    "task",
-    "environment",
-    "logging"
-  ],
+  "required": ["schema_meta", "identifiers", "robot_profile", "graph"],
+  "additionalProperties": false,
+
   "properties": {
-    "context_id": {
-      "type": "string"
-    },
-    "robot_ids": {
-      "type": "array",
-      "items": {
-        "type": "string"
+    "schema_meta": {
+      "type": "object",
+      "description": "Schema and file-level metadata for versioning and reproducibility.",
+      "required": ["schema_name", "schema_version", "file_version", "created_at", "licenses"],
+      "additionalProperties": false,
+      "properties": {
+        "schema_name": { "type": "string", "const": "EnerMorph Morphology" },
+        "schema_version": {
+          "type": "string",
+          "description": "Semantic version of the schema definition.",
+          "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+        },
+        "file_version": {
+          "type": "string",
+          "description": "Semantic version of THIS morphology instance (increment when the morphology changes).",
+          "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"
+        },
+        "created_at": { "$ref": "#/$defs/iso_datetime" },
+        "updated_at": { "$ref": "#/$defs/iso_datetime" },
+        "hash_sha256": {
+          "type": "string",
+          "description": "Optional content hash (over canonicalized JSON) for reproducibility.",
+          "pattern": "^[a-fA-F0-9]{64}$"
+        },
+        "licenses": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string" },
+          "description": "List of applicable licenses (e.g., MIT for schema; CC-BY-4.0 for data)."
+        },
+        "provenance": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "authors": { "type": "array", "items": { "type": "string" } },
+            "organization": { "type": "string" },
+            "toolchain": { "type": "array", "items": { "type": "string" } },
+            "notes": { "type": "string" }
+          }
+        },
+        "unit_system": {
+          "type": "string",
+          "description": "Unit convention of quantitative fields.",
+          "enum": ["SI"]
+        }
       }
     },
-    "task": {
+
+    "identifiers": {
       "type": "object",
-      "required": [
-        "type",
-        "max_episode_time_s"
-      ],
+      "description": "Stable IDs linking morphology to datasets and episodes.",
+      "required": ["morphology_id"],
+      "additionalProperties": false,
       "properties": {
-        "type": {
+        "morphology_id": { "$ref": "#/$defs/uuid_or_slug" },
+        "dataset_id": { "$ref": "#/$defs/uuid_or_slug" },
+        "external_refs": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/external_ref" }
+        }
+      }
+    },
+
+    "robot_profile": {
+      "type": "object",
+      "description": "High-level, vendor-neutral description of the platform.",
+      "required": ["robot_class"],
+      "additionalProperties": false,
+      "properties": {
+        "name": { "type": "string" },
+        "robot_class": {
           "type": "string",
-          "enum": [
-            "navigation",
-            "manipulation",
-            "transport",
-            "patrol"
-          ]
+          "description": "General class; extendable.",
+          "enum": ["AMR", "Manipulator", "MobileManipulator", "Legged", "Aerial", "SurfaceMarine", "Hybrid", "Other"]
         },
-        "route_file": {
-          "type": "string"
-        },
-        "payload": {
+        "degrees_of_freedom": { "type": "integer", "minimum": 0 },
+        "mass_kg": { "type": "number", "minimum": 0 },
+        "footprint": {
           "type": "object",
+          "additionalProperties": false,
           "properties": {
-            "mass_kg": {
-              "type": "number",
-              "minimum": 0
+            "shape": { "type": "string", "enum": ["rect", "circle", "poly", "unknown"] },
+            "dims_m": {
+              "description": "Dimensions in meters; interpretation depends on shape.",
+              "oneOf": [
+                { "$ref": "#/$defs/vec2" },
+                { "$ref": "#/$defs/vec3" },
+                { "type": "array", "items": { "$ref": "#/$defs/vec2" } }
+              ]
             }
           }
         },
-        "max_episode_time_s": {
-          "type": "number",
-          "minimum": 1
-        }
+        "interfaces": {
+          "type": "array",
+          "description": "Top-level I/O & comms exposed by the platform (e.g., CAN, EtherCAT, UART, Wi-Fi).",
+          "items": { "$ref": "#/$defs/interface" }
+        },
+        "safety": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "emergency_stop": { "type": "boolean" },
+            "max_velocity_mps": { "type": "number", "minimum": 0 },
+            "max_payload_kg": { "type": "number", "minimum": 0 },
+            "protection_ratings": {
+              "type": "array",
+              "items": { "type": "string", "description": "e.g., IP54, IK08" }
+            }
+          }
+        },
+        "notes": { "type": "string" }
       }
     },
-    "environment": {
+
+    "graph": {
       "type": "object",
+      "description": "Core morphology graph: nodes (entities) and edges (relations).",
+      "required": ["node_set"],
+      "additionalProperties": false,
       "properties": {
-        "surface": {
-          "type": "string"
+        "node_set": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/node" }
         },
-        "slope_deg": {
-          "type": "number"
+        "edge_set": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/edge" }
         },
-        "mu": {
-          "type": "number",
-          "minimum": 0
+        "coordinate_frames": {
+          "type": "array",
+          "description": "Optional kinematic frames for reproducibility; lightweight and generic.",
+          "items": { "$ref": "#/$defs/frame_def" }
         }
       }
     },
-    "logging": {
+
+    "modules": {
+      "type": "array",
+      "description": "Optional: modular grouping (e.g., base, arm, gripper, sensor mast).",
+      "items": { "$ref": "#/$defs/module" }
+    },
+
+    "attachments": {
+      "type": "array",
+      "description": "Optional: payloads/end-effectors and their mounting info.",
+      "items": { "$ref": "#/$defs/attachment" }
+    },
+
+    "calibration": {
+      "type": "array",
+      "description": "Optional: calibration blobs or references for sensors/actuators/frames.",
+      "items": { "$ref": "#/$defs/calibration" }
+    },
+
+    "vendor_data": {
       "type": "object",
-      "required": [
-        "resolution_hz"
+      "description": "Optional vendor-specific info; kept separate to preserve neutrality.",
+      "additionalProperties": true
+    },
+
+    "attributes": {
+      "type": "object",
+      "description": "Free-form extensibility for future fields without breaking the schema.",
+      "additionalProperties": true
+    }
+  },
+
+  "$defs": {
+    "iso_datetime": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 date-time in UTC recommended."
+    },
+    "uuid_or_slug": {
+      "oneOf": [
+        { "type": "string", "format": "uuid" },
+        { "type": "string", "pattern": "^[a-zA-Z0-9][a-zA-Z0-9_-]{2,64}$" }
       ],
+      "description": "Stable identifier; UUID preferred, slug allowed."
+    },
+    "uri": { "type": "string", "format": "uri" },
+
+    "vec2": {
+      "type": "array",
+      "items": [{ "type": "number" }, { "type": "number" }],
+      "minItems": 2,
+      "maxItems": 2
+    },
+    "vec3": {
+      "type": "array",
+      "items": [{ "type": "number" }, { "type": "number" }, { "type": "number" }],
+      "minItems": 3,
+      "maxItems": 3
+    },
+
+    "external_ref": {
+      "type": "object",
+      "additionalProperties": false,
       "properties": {
-        "resolution_hz": {
-          "type": "number",
-          "minimum": 1
+        "type": { "type": "string", "description": "e.g., 'datasheet', 'repo', 'urdf', 'mesh', 'image', 'doc'"},
+        "uri": { "$ref": "#/$defs/uri" },
+        "hash_sha256": { "type": "string", "pattern": "^[a-fA-F0-9]{64}$" },
+        "notes": { "type": "string" }
+      },
+      "required": ["type", "uri"]
+    },
+
+    "interface": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "name": { "type": "string" },
+        "category": {
+          "type": "string",
+          "description": "Transport/protocol category",
+          "enum": ["Power", "Comms", "Data", "Control", "Mechanical", "Other"]
         },
-        "sync": {
-          "type": "string"
+        "protocol": { "type": "string", "description": "e.g., CAN, EtherCAT, UART, I2C, SPI, TCP, UDP, MQTT" },
+        "bandwidth_mbps": { "type": "number", "minimum": 0 },
+        "voltage_v": { "type": "number" },
+        "current_limit_a": { "type": "number" },
+        "connector": { "type": "string" },
+        "attributes": { "type": "object", "additionalProperties": true }
+      },
+      "required": ["name", "category"]
+    },
+
+    "node": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "node_type"],
+      "properties": {
+        "id": { "$ref": "#/$defs/uuid_or_slug" },
+        "name": { "type": "string" },
+        "node_type": {
+          "type": "string",
+          "description": "Open vocabulary; suggested tags below for consistency."
+        },
+        "tags": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Suggested tags: base_link, link, joint, wheel, motor, gearbox, battery, bms, imu, lidar, camera, tof, ir, encoder, force_torque, gripper, arm_link, cpu, mcu, nic, psu."
+        },
+        "interfaces": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/interface" }
+        },
+        "pose_in_parent": {
+          "type": "object",
+          "description": "Optional static pose (SE(3)) of this node frame in its parent frame (meters, radians).",
+          "additionalProperties": false,
+          "properties": {
+            "parent_frame": { "type": "string" },
+            "translation_m": { "$ref": "#/$defs/vec3" },
+            "rotation_rpy_rad": { "$ref": "#/$defs/vec3" }
+          }
+        },
+        "physical": {
+          "type": "object",
+          "description": "Optional physical parameters (SI).",
+          "additionalProperties": false,
+          "properties": {
+            "mass_kg": { "type": "number", "minimum": 0 },
+            "inertia": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "ixx": { "type": "number" }, "ixy": { "type": "number" }, "ixz": { "type": "number" },
+                "iyy": { "type": "number" }, "iyz": { "type": "number" }, "izz": { "type": "number" }
+              }
+            },
+            "geom_hint": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "shape": { "type": "string", "enum": ["box", "cylinder", "sphere", "mesh", "unknown"] },
+                "dims_m": { "type": "array", "items": { "type": "number" } }
+              }
+            }
+          }
+        },
+        "capabilities": {
+          "type": "object",
+          "description": "Optional: sensor/actuator/data capabilities.",
+          "additionalProperties": true
+        },
+        "attributes": {
+          "type": "object",
+          "description": "Free-form key-values for extensibility.",
+          "additionalProperties": true
+        },
+        "external_refs": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/external_ref" }
         }
+      }
+    },
+
+    "edge": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "source", "target", "relation_type"],
+      "properties": {
+        "id": { "$ref": "#/$defs/uuid_or_slug" },
+        "source": { "$ref": "#/$defs/uuid_or_slug" },
+        "target": { "$ref": "#/$defs/uuid_or_slug" },
+        "relation_type": {
+          "type": "string",
+          "description": "Open vocabulary. Suggested: kinematic, electrical, data, control, power, mechanical, network, transform."
+        },
+        "bidirectional": { "type": "boolean", "default": false },
+        "attributes": { "type": "object", "additionalProperties": true }
+      }
+    },
+
+    "frame_def": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["frame_id"],
+      "properties": {
+        "frame_id": { "type": "string" },
+        "parent_frame": { "type": "string", "default": "world" },
+        "static_tf": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "translation_m": { "$ref": "#/$defs/vec3" },
+            "rotation_rpy_rad": { "$ref": "#/$defs/vec3" }
+          }
+        },
+        "notes": { "type": "string" }
+      }
+    },
+
+    "module": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "name"],
+      "properties": {
+        "id": { "$ref": "#/$defs/uuid_or_slug" },
+        "name": { "type": "string" },
+        "node_ids": { "type": "array", "items": { "$ref": "#/$defs/uuid_or_slug" } },
+        "edge_ids": { "type": "array", "items": { "$ref": "#/$defs/uuid_or_slug" } },
+        "role": { "type": "string", "description": "e.g., base, arm, gripper, perception, power, comms." },
+        "attributes": { "type": "object", "additionalProperties": true }
+      }
+    },
+
+    "attachment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "name"],
+      "properties": {
+        "id": { "$ref": "#/$defs/uuid_or_slug" },
+        "name": { "type": "string" },
+        "mounted_to_node": { "$ref": "#/$defs/uuid_or_slug" },
+        "mount_frame": { "type": "string", "description": "Frame name on the host node (if applicable)." },
+        "pose_in_mount": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "translation_m": { "$ref": "#/$defs/vec3" },
+            "rotation_rpy_rad": { "$ref": "#/$defs/vec3" }
+          }
+        },
+        "mass_kg": { "type": "number", "minimum": 0 },
+        "interfaces": { "type": "array", "items": { "$ref": "#/$defs/interface" } },
+        "attributes": { "type": "object", "additionalProperties": true },
+        "external_refs": { "type": "array", "items": { "$ref": "#/$defs/external_ref" } }
+      }
+    },
+
+    "calibration": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "target_ref", "calib_type", "created_at"],
+      "properties": {
+        "id": { "$ref": "#/$defs/uuid_or_slug" },
+        "target_ref": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "node_id": { "$ref": "#/$defs/uuid_or_slug" },
+            "edge_id": { "$ref": "#/$defs/uuid_or_slug" },
+            "frame_id": { "type": "string" }
+          }
+        },
+        "calib_type": { "type": "string", "description": "e.g., camera_intrinsic, camera_extrinsic, imu_bias, wheel_radius, joint_zero, tf_alignment" },
+        "data_uri": { "$ref": "#/$defs/uri", "description": "Binary or JSON blob stored externally (e.g., npz/json)." },
+        "hash_sha256": { "type": "string", "pattern": "^[a-fA-F0-9]{64}$" },
+        "created_at": { "$ref": "#/$defs/iso_datetime" },
+        "notes": { "type": "string" }
       }
     }
   }

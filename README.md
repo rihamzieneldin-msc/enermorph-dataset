@@ -1,13 +1,13 @@
 # EnerMorph Dataset (Real Hardware)
 
 **Context-rich, morphology–energy dataset** for training and evaluating energy-aware policy transfer across heterogeneous robots.  
-Runs are collected **on real platforms**, not simulation, with standardized morphology (YAML), context (YAML), and episode logs (CSV).
+Runs are collected **on real platforms**, not simulation, with standardized morphology (json), context (json), and episode logs (CSV).
 
 ## Structure
 ```
 data/
- ├─ morphologies/  # per-robot YAML (static hardware & wiring)
- ├─ contexts/      # per-scenario YAML (task & environment)
+ ├─ morphologies/  # per-robot json (static hardware & wiring)
+ ├─ contexts/      # per-scenario json (task & environment)
  ├─ episodes/      # per-run CSV (time-series logs)
  └─ metadata/      # feature maps, units, docs
 ```

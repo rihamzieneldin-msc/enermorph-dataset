@@ -1,1 +1,336 @@
 
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://enermorph.org/schema/base.schema.json",
+  "title": "EnerMorph Base Schema ($defs)",
+  "description": "Shared type definitions reused by morphology, context, and episode schemas.",
+  "type": "object",
+  "additionalProperties": false,
+  "$defs": {
+    "RobotClass": {
+      "type": "string",
+      "enum": ["AMR", "Manipulator", "MobileManipulator", "Other"],
+      "description": "Robot class taxonomy."
+    },
+
+    "JointType": {
+      "type": "string",
+      "enum": ["revolute", "prismatic", "fixed", "continuous", "floating"],
+      "description": "Joint type enumeration."
+    },
+
+    "ActuatorType": {
+      "type": "string",
+      "enum": ["motor", "servo", "hydraulic", "pneumatic", "other"],
+      "description": "Actuator type enumeration."
+    },
+
+    "SensorType": {
+      "type": "string",
+      "enum": [
+        "IMU",
+        "CameraRGB",
+        "CameraDepth",
+        "LiDAR2D",
+        "LiDAR3D",
+        "Encoder",
+        "ForceTorque",
+        "Current",
+        "Voltage",
+        "Other"
+      ],
+      "description": "Sensor type enumeration."
+    },
+
+    "FrameID": {
+      "type": "string",
+      "pattern": "^[a-z0-9_]+$",
+      "description": "Frame name (snake_case). Root: world; base: base_link."
+    },
+
+    "Pose": {
+      "type": "object",
+      "description": "6D pose of child in parent frame (SI units; meters, radians).",
+      "required": ["position", "orientation"],
+      "properties": {
+        "position": {
+          "type": "object",
+          "required": ["x_m", "y_m", "z_m"],
+          "properties": {
+            "x_m": { "type": "number" },
+            "y_m": { "type": "number" },
+            "z_m": { "type": "number" }
+          },
+          "additionalProperties": false
+        },
+        "orientation": {
+          "type": "object",
+          "description": "Exactly one representation must be provided: quaternion OR RPY (rad).",
+          "oneOf": [
+            {
+              "required": ["qw", "qx", "qy", "qz"],
+              "properties": {
+                "qw": { "type": "number" },
+                "qx": { "type": "number" },
+                "qy": { "type": "number" },
+                "qz": { "type": "number" }
+              },
+              "additionalProperties": false
+            },
+            {
+              "required": ["roll_rad", "pitch_rad", "yaw_rad"],
+              "properties": {
+                "roll_rad": { "type": "number" },
+                "pitch_rad": { "type": "number" },
+                "yaw_rad": { "type": "number" }
+              },
+              "additionalProperties": false
+            }
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+
+    "Twist": {
+      "type": "object",
+      "description": "Linear and angular velocities (m/s, rad/s).",
+      "required": ["linear_mps", "angular_radps"],
+      "properties": {
+        "linear_mps": {
+          "type": "object",
+          "required": ["x", "y", "z"],
+          "properties": {
+            "x": { "type": "number" },
+            "y": { "type": "number" },
+            "z": { "type": "number" }
+          },
+          "additionalProperties": false
+        },
+        "angular_radps": {
+          "type": "object",
+          "required": ["x", "y", "z"],
+          "properties": {
+            "x": { "type": "number" },
+            "y": { "type": "number" },
+            "z": { "type": "number" }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+
+    "TwistLimits": {
+      "type": "object",
+      "description": "Nominal twist limits (SI).",
+      "properties": {
+        "linear_mps_max": { "type": "number", "minimum": 0 },
+        "angular_radps_max": { "type": "number", "minimum": 0 }
+      },
+      "additionalProperties": false
+    },
+
+    "Wrench": {
+      "type": "object",
+      "description": "Forces (N) and torques (Nm).",
+      "properties": {
+        "force_N": {
+          "type": "object",
+          "properties": {
+            "x": { "type": "number" },
+            "y": { "type": "number" },
+            "z": { "type": "number" }
+          },
+          "additionalProperties": false
+        },
+        "torque_Nm": {
+          "type": "object",
+          "properties": {
+            "x": { "type": "number" },
+            "y": { "type": "number" },
+            "z": { "type": "number" }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+
+    "Frame": {
+      "type": "object",
+      "description": "Static transform between frames.",
+      "required": ["frame_id", "parent", "pose"],
+      "properties": {
+        "frame_id": { "$ref": "#/$defs/FrameID" },
+        "parent": { "$ref": "#/$defs/FrameID" },
+        "pose": { "$ref": "#/$defs/Pose" },
+        "description": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+
+    "Extrinsic": {
+      "type": "object",
+      "required": ["child_frame", "parent_frame", "pose"],
+      "properties": {
+        "child_frame": { "$ref": "#/$defs/FrameID" },
+        "parent_frame": { "$ref": "#/$defs/FrameID" },
+        "pose": { "$ref": "#/$defs/Pose" }
+      },
+      "additionalProperties": false
+    },
+
+    "LinkSpec": {
+      "type": "object",
+      "description": "Rigid link specification (SI units).",
+      "required": ["link_id", "mass_kg", "com_in_parent", "inertia"],
+      "properties": {
+        "link_id": { "type": "string", "pattern": "^[a-z0-9_]+$" },
+        "mass_kg": { "type": "number", "minimum": 0 },
+        "com_in_parent": { "$ref": "#/$defs/Pose" },
+        "inertia": {
+          "type": "object",
+          "required": ["Ixx", "Iyy", "Izz", "Ixy", "Ixz", "Iyz"],
+          "properties": {
+            "Ixx": { "type": "number" },
+            "Iyy": { "type": "number" },
+            "Izz": { "type": "number" },
+            "Ixy": { "type": "number" },
+            "Ixz": { "type": "number" },
+            "Iyz": { "type": "number" }
+          },
+          "additionalProperties": false
+        },
+        "visual_frame": { "$ref": "#/$defs/FrameID" },
+        "collision_frame": { "$ref": "#/$defs/FrameID" },
+        "x_reserved": { "type": "object", "additionalProperties": true }
+      },
+      "additionalProperties": false
+    },
+
+    "JointSpec": {
+      "type": "object",
+      "description": "Joint connecting parent and child links (SI; pose at joint origin).",
+      "required": ["joint_id", "type", "parent_link", "child_link", "origin"],
+      "properties": {
+        "joint_id": { "type": "string", "pattern": "^[a-z0-9_]+$" },
+        "type": { "$ref": "#/$defs/JointType" },
+        "parent_link": { "type": "string", "pattern": "^[a-z0-9_]+$" },
+        "child_link": { "type": "string", "pattern": "^[a-z0-9_]+$" },
+        "origin": { "$ref": "#/$defs/Pose" },
+        "axis": {
+          "type": "object",
+          "description": "Unit vector in parent frame.",
+          "properties": {
+            "x": { "type": "number" },
+            "y": { "type": "number" },
+            "z": { "type": "number" }
+          },
+          "additionalProperties": false
+        },
+        "x_reserved": { "type": "object", "additionalProperties": true }
+      },
+      "additionalProperties": false
+    },
+
+    "JointLimit": {
+      "type": "object",
+      "description": "Kinematic/dynamic limits (SI).",
+      "required": ["joint_id"],
+      "properties": {
+        "joint_id": { "type": "string", "pattern": "^[a-z0-9_]+$" },
+        "position_min": { "type": "number" },
+        "position_max": { "type": "number" },
+        "velocity_max": { "type": "number", "minimum": 0 },
+        "accel_max": { "type": "number", "minimum": 0 },
+        "effort_max": { "type": "number", "minimum": 0 },
+        "x_reserved": { "type": "object", "additionalProperties": true }
+      },
+      "additionalProperties": false
+    },
+
+    "ActuatorSpec": {
+      "type": "object",
+      "description": "Actuator specification (SI; mount frame recommended).",
+      "required": ["actuator_id", "type"],
+      "properties": {
+        "actuator_id": { "type": "string", "pattern": "^[a-z0-9_]+$" },
+        "type": { "$ref": "#/$defs/ActuatorType" },
+        "model": { "type": "string" },
+        "rated_voltage_V": { "type": "number", "minimum": 0 },
+        "rated_current_A": { "type": "number", "minimum": 0 },
+        "rated_torque_Nm": { "type": "number", "minimum": 0 },
+        "rated_speed_rpm": { "type": "number", "minimum": 0 },
+        "gear_ratio": { "type": "number", "minimum": 0 },
+        "efficiency_pct": { "type": "number", "minimum": 0, "maximum": 100 },
+        "mount_frame": { "$ref": "#/$defs/FrameID" },
+        "drives_joint": { "type": "string", "pattern": "^[a-z0-9_]+$", "description": "Joint ID that this actuator drives." },
+        "x_reserved": { "type": "object", "additionalProperties": true }
+      },
+      "additionalProperties": false
+    },
+
+    "SensorSpec": {
+      "type": "object",
+      "description": "Sensor specification (pose in parent; SI).",
+      "required": ["sensor_id", "type", "frame_id", "rate_Hz"],
+      "properties": {
+        "sensor_id": { "type": "string", "pattern": "^[a-z0-9_]+$" },
+        "type": { "$ref": "#/$defs/SensorType" },
+        "model": { "type": "string" },
+        "frame_id": { "$ref": "#/$defs/FrameID" },
+        "rate_Hz": { "type": "number", "minimum": 0 },
+        "intrinsics": { "type": "object", "additionalProperties": true },
+        "extrinsic_to": { "$ref": "#/$defs/FrameID" },
+        "pose_in_parent": { "$ref": "#/$defs/Pose" },
+        "fields": {
+          "type": "array",
+          "description": "Signal names published into timeseries (e.g., ax, ay, az).",
+          "items": { "type": "string", "pattern": "^[a-z0-9_]+$" }
+        },
+        "x_reserved": { "type": "object", "additionalProperties": true }
+      },
+      "additionalProperties": false
+    },
+
+    "DHRow": {
+      "type": "object",
+      "description": "Denavit–Hartenberg row (meters, radians).",
+      "required": ["a_m", "alpha_rad", "d_m", "theta_rad"],
+      "properties": {
+        "a_m": { "type": "number" },
+        "alpha_rad": { "type": "number" },
+        "d_m": { "type": "number" },
+        "theta_rad": { "type": "number" }
+      },
+      "additionalProperties": false
+    },
+
+    "BatterySpec": {
+      "type": "object",
+      "description": "Battery pack specification (SI).",
+      "properties": {
+        "pack_model": { "type": "string" },
+        "chemistry": { "type": "string", "description": "e.g., LiPo, Li-ion, LiFePO4" },
+        "capacity_Wh": { "type": "number", "minimum": 0 },
+        "nominal_voltage_V": { "type": "number", "minimum": 0 },
+        "max_discharge_A": { "type": "number", "minimum": 0 },
+        "mount_frame": { "$ref": "#/$defs/FrameID" },
+        "pose_in_parent": { "$ref": "#/$defs/Pose" },
+        "x_reserved": { "type": "object", "additionalProperties": true }
+      },
+      "additionalProperties": false
+    },
+
+    "FileChecksum": {
+      "type": "object",
+      "description": "Checksum and optional size metadata.",
+      "properties": {
+        "sha256": { "type": "string", "pattern": "^[a-fA-F0-9]{64}$" },
+        "size_bytes": { "type": "integer", "minimum": 0 }
+      },
+      "additionalProperties": false
+    }
+  }
+}

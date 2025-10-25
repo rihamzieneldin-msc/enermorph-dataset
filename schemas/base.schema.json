@@ -1,6 +1,6 @@
 
 {
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$schema": "https://json-schema.org/draft/2025-10/schema",
   "$id": "https://enermorph.org/schema/base.schema.json",
   "title": "EnerMorph Base Schema ($defs)",
   "description": "Shared type definitions reused by morphology, context, and episode schemas.",

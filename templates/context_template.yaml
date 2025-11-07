@@ -8,7 +8,7 @@ task:
   max_episode_time_s: 120
 
 environment:
-  surface: "epoxy"
+  surface: ""
   slope_deg: 0
   mu: 0.6
 
